@@ -1,0 +1,278 @@
+---
+title: "UniversalBank_kNN_Assignment 2"
+author: "Afaf MS"
+date: "2026-10-04"
+output: html_document
+---
+
+```{r}
+UniversalBank <-read.csv("UniversalBank.csv")
+UniversalBank$Education <- as.factor(UniversalBank$Education)
+education.dummies <- model.matrix(~ Education -1, data = UniversalBank)
+head(education.dummies)
+names(UniversalBank)
+set.seed(123)
+set.seed(1)
+train.index <- sample(1:nrow(UniversalBank), 0.6*nrow(UniversalBank))
+train.df <- UniversalBank[train.index, ]
+valid.df <- UniversalBank[-train.index, ]
+new.customer <- data.frame(
+  Age = 40,
+  Experience = 10,
+  Income = 84,
+  Family = 2,
+  CCAvg = 2, 
+  Education_1 = 0,
+  Education_2 = 1, 
+  Education_3 = 0, 
+  Mortgage = 0,
+  Securities.Account = 0,
+  CD.Account = 0,
+  Online = 1,
+  CreaditCard = 1
+)
+names(new.customer)[6:13] <- c("Education1", "Education2", "Education3","Mortgage","Securities.Account","CD.Account","Online", "CreditCard")
+names(new.customer)
+head(new.customer)
+table(UniversalBank$Education)
+head(education.dummies)
+unique(UniversalBank$Education)
+UniversalBank$Education[1:6]
+education.dummies <- model.matrix(~ Education - 1, data = UniversalBank)
+head(education.dummies)
+UniversalBank$Education <- as.factor(UniversalBank$Education)
+education.dummies <- model.matrix(~ Education - 1, data = UniversalBank)
+head(education.dummies)
+UniversalBank.knn<- data.frame(
+  Age = UniversalBank$Age,
+  Experience = UniversalBank$Experience,
+  Income = UniversalBank$Income,
+  Family = UniversalBank$Family,
+  CCAvg = UniversalBank$CCAvg,
+  education.dummies,
+  Mortgage = UniversalBank$Mortgage,
+  Securities.Account = UniversalBank$Securities.Account,
+  CD.Account = UniversalBank$CD.Account,
+  Online = UniversalBank$Online,
+  CreditCard = UniversalBank$CreditCard,
+  Personal.Loan = UniversalBank$Personal.Loan
+)
+names(UniversalBank.knn)
+set.seed(1)
+train.index <- sample(1:nrow(UniversalBank.knn), 0.6 * nrow(UniversalBank.knn))
+train.df <- UniversalBank.knn[train.index, ]
+valid.df <- UniversalBank.knn[-train.index, ]
+nrow(train.df)
+nrow(valid.df)
+library(caret)
+library(caret)
+norm.values <- preProcess(train.df[, 1:13], method = c("center", "scale")
+                          )
+train.norm.df <- train.df
+train.norm.df[, 1:13] <- predict(norm.values,
+                                 train.df[, 1:13]
+                                 )
+head(train.norm.df)
+valid.norm.df <- valid.df
+valid.norm.df[, 1:13] <- predict(norm.values, 
+                                 valid.df[, 1:13]
+                                 )
+head(valid.norm.df)
+new.norm.df <- predict(
+  norm.values,
+  new.customer 
+)
+names(new.customer)
+names(train.df)
+
+new.norm.df
+library(FNN)
+ncol(train.norm.df)
+nrow(train.norm.df)
+length(train.norm.df[, 14])
+class(train.norm.df[, 14])
+table(train.norm.df[, 14])
+train.norm.df[, 14] <- as.factor(train.norm.df[, 14])
+knn.pred <- knn(
+  train = train.norm.df[, 1:13],
+  test = new.norm.df,
+  cl = train.norm.df[, 14],
+  k = 1
+)
+knn.pred
+as.character(knn.pred)
+ifelse(as.numeric(as.character(knn.pred)) >= 0.5, 1, 0)
+library(FNN)
+knn.pred.3 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 3
+)
+mean(knn.pred.3 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.1 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 1
+)
+mean(knn.pred.1 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.5 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 5
+)
+mean(knn.pred.5 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.7 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 7
+)
+mean(knn.pred.7 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.7 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 7
+)
+mean(knn.pred.7 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.7 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 7
+)
+mean(knn.pred.7 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.9 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 9
+)
+mean(knn.pred.9 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.9 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 9
+)
+mean(knn.pred.9 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.11 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 11
+)
+mean(knn.pred.11 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.13 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 13
+)
+mean(knn.pred.13 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.15 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 15
+)
+mean(knn.pred.15 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.17 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 17
+)
+mean(knn.pred.17 == valid.norm.df[, 14])
+library(FNN)
+knn.pred.19 <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 19
+)
+mean(knn.pred.19 == valid.norm.df[, 14])
+library(caret)
+class(valid.norm.df[, 14])
+valid.norm.df[, 14] <- as.factor(valid.norm.df[, 14])
+confusionMatrix(knn.pred.3, valid.norm.df[, 14])
+library(FNN)
+knn.pred.new.3 <- knn(
+  train = train.norm.df[, 1:13],
+  test = new.norm.df,
+  cl = train.norm.df[, 14],
+  k = 3
+)
+knn.pred.new.3
+set.seed(1)
+train.index <- sample(1: nrow(UniversalBank), 0.5*nrow(UniversalBank.knn) )
+train.df <- UniversalBank.knn[train.index, ]
+valid.index <- sample(setdiff(1: nrow(UniversalBank.knn), train.index), 0.3*nrow(UniversalBank))
+valid.df <- UniversalBank.knn[valid.index, ]
+test.index <- setdiff(1:nrow(UniversalBank.knn),c(train.index,valid.index))
+test.df <- UniversalBank.knn[test.index, ]
+nrow(train.df)
+nrow(valid.df)
+nrow(test.df)
+class(train.df [, 14])
+train.df[, 14] <- as.factor(train.df[, 14])
+class(valid.df[, 14])
+valid.df[, 14] <- as.factor(valid.df[, 14])
+class(test.df[, 14])
+test.df[, 14] <- as.factor(test.df[, 14])
+library(caret)
+norm.values <- preProcess(train.df[, 1:13], method = c("center", "scale"))
+train.norm.df <- train.df
+train.norm.df[, 1:13] <-predict(
+  norm.values,
+  train.df[, 1:13]
+)
+valid.norm.df <- valid.df
+valid.norm.df[, 1:13] <- predict(
+  norm.values,
+  valid.df[, 1:13]
+)
+test.norm.df <- test.df
+test.norm.df[, 1:13] <- predict(
+  norm.values,
+  test.df[, 1:13]
+)
+library(FNN)
+knn.pred.train <- knn(
+  train = train.norm.df[, 1:13],
+  test = train.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k=3
+)
+confusionMatrix(knn.pred.train, train.norm.df[, 14])
+knn.pred.valid <- knn(
+  train = train.norm.df[, 1:13],
+  test = valid.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 3
+)
+confusionMatrix(knn.pred.valid, valid.norm.df[, 14])
+knn.pred.test <- knn(
+  train = train.norm.df[, 1:13],
+  test = test.norm.df[, 1:13],
+  cl = train.norm.df[, 14],
+  k = 3
+)
+confusionMatrix(knn.pred.test, test.norm.df[, 14])
+names(UniversalBank.knn)
+
+```
