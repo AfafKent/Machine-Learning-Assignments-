@@ -1,0 +1,38 @@
+---
+title: "Eye Cancer Patients"
+author: "Afaf MS"
+date: "2026-09-14"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##load the Dataset
+
+```{r analyse}
+patients<- read.csv("eye_cancer_patients.csv")
+```
+##Analyse the Dataset
+
+```{r Descriptive Statistics}
+str(patients)
+```
+##descriptive statistics 
+
+```{r Age}
+(patients$Age)
+```
+##Gender
+
+```{r Gender}
+(patients$Gender)
+``` 
+##Survival Time
+
+```{r Survival Time}
+(patients$SurvivalTime)
+```
+
