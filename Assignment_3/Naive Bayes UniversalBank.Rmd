@@ -1,0 +1,125 @@
+---
+title: "Naive Bayes UniversalBank"
+author: "Afaf MS"
+date: "2026-10-11"
+output: html_document
+---
+
+```{r setup}
+UniversalBank <- read.csv("UniversalBank.csv")
+set.seed(1)
+train.index <- sample(1:nrow(UniversalBank), 0.6*nrow(UniversalBank))
+train.df <- UniversalBank[train.index, ]
+valid.df <- UniversalBank[-train.index, ]
+nrow(train.df)
+nrow(valid.df)
+names(train.df)
+train.df$CreditCard
+train.df$Personal.Loan
+train.df$Online
+length(train.df$CreditCard)
+length(train.df$Personal.Loan)
+length(train.df$Online)
+counts<- table(
+  train.df$CreditCard,
+  train.df$Personal.Loan,
+  train.df$Online
+)
+ftable(counts, row.vars = c(1,2), col.vars=3)
+table(train.df$Personal.Loan, train.df$Online)
+table(train.df$Personal.Loan, train.df$CreditCard)
+
+library(e1071)
+nb.model <- naiveBayes(as.factor(Personal.Loan)~ as.factor(CreditCard)+ as.factor(Online), data=train.df)
+nb.model
+```
+Question B: 
+Classification of customer who owns a bank credit card and is actively using online banking services. 
+The pivot table shows that 47 customers who own a bank credit card and actively utilize online banking services accepted the loan offer. The total number of customers who own a credit card and actively use online banking services is 47+469= 516. 
+The probability of accepting the loan offer is the number of customers who accepted the offer divided by the total number of customers in this group: 47/516= 0.0910. Convert 0.0910 to percentage: 0.0910x100= 9.1%
+Therefore, the probability that a customer who owns a credit card and actively uses online banking services will accept the loan offer is approximately 9.1 %. 
+
+Question D:
+i. P(CC = 1| Loan =1) represents the proportion of customers with credit card among those who accepted a personal loan offer.
+Customers who accepted the loan and own a credit card= 77
+The total number of customers who accepted the loan is 198+77=275. 
+P(CC = 1 | Loan =1 ) = 77/275= 0.28. 0.28x100= 28%. 
+So, the probability that a customer who accepted the personal loan offer owns a credit card is 28%. 
+
+ii. P(Online = 1|Loan = 1) represents the proportion of customers who use online banking among those who accepted the loan offer.  
+Customers who accepted the loan and use online banking= 166
+The total number of customers who accepted the loan is 166+109= 275
+P(Online=1|Loan=1)= 166/275= 0.6036. 0.6036x100= 60.4%. 
+So, the probability that a customer who accepted the personal loan offer uses online banking is 60.4% 
+
+iii. P(Loan = 1) represents the proportion of customers who accepted the personal loan offer in the whole training data,not just a specific group. 
+Customers who accepted the loan= 109+166= 275
+The total number of customers in the training data= 3000
+P(loan=1)= 275/3000=0.0916
+0.0916x100=9.17%. 
+So, about 9.17% of customers in the training data accepted the personal loan offer. 
+
+iv P(CC = 1 | Loan = 0) represents the proportion of customers who own a credit card among those who did not accept the personal loan offer. 
+Customers who did not accept the loan offer but own a credit card= 801
+The total number of customers who did not accept the loan offer= 801+1924= 2725
+P(CC = 1 | Loan = 0)= 801/2725=0.2939
+0.2939x100= 29.4%
+So, the probability that a customer who did not accept the personal loan offer owns a credit card is approximately 29.4%. 
+
+v P(Online = 1 | Loan = 0) represents the proportion of customers who use online banking services among those who did not accept the personal loan offer. 
+Customers who did not accept the loan offer but use online banking services= 1588
+The total number of customers who did not accept the loan offer= 1588+1137= 2725
+ P(Online = 1 | Loan = 0)= 1588/2725=0.5827
+0.5827x100= 58.3%
+So, the probability that a customer who did not accept the personal loan offer uses online banking services is approximately 58.3%. 
+
+P(Loan = 0) represents the proportion of customers who did not accept the personal loan offer in the whole training data,not just a specific group. 
+Customers who did not accept the loan= 1588+1137= 2725
+The total number of customers in the training data= 3000
+P(loan=0)= 2725/3000=0.9083
+0.9083x100=90.83%
+So, about 90.8% of customers in the training data did not accept the personal loan offer. 
+
+Question E: 
+P(Loan = 1 | CC
+= 1, Online = 1) represents the Naive Bayes probability that a customer will accept the personal loan offer if they have a credit card and use online banking.  
+The score of customers who accepted the loan S1=
+P(CC= 1| Loan = 1) x P(Online=1|Loan=1) x P(Loan=1)= 0.28x 0.603x0.0916= 0.01545
+
+The score of customers who did not accept the loan S2: 
+P(CC= 1|Loan=0)x P(Online=1|Loan=0)x P(Loan=0)= 0.2939x0.5827x0.9083= 0.15556
+The final probability is obtained through dividing the score for loan=1 by the sum of the two score I got above: 
+P( Loan=1|CC=1, Online=1)= S1/ (S1+S2)= 0.01545/(0.01545+0.15556)= 0.01545/0.1710=0.09035
+0.09035x100=9.04%
+The probability of customers accepting the personal loan offer and have credit card and use online banking services is approximately 9.04%.
+
+Question F:
+The probability from the pivot table back in question B is 9.1 %. 
+The Naive Bayes probability is 9.04%
+The difference in the percentages is 0.07 percentage points which is very close, making it inconclusive which estimate is more accurate,especially that both estimates are calculated from the training data, and the decision on which estimate is more accurate will necessitate evaluating the model on our validation data (2000 customers we divided at the outset of the project). 
+
+Question G:
+The entries for (Loan = 1 | CC = 1, Online = 1) are: 47 and 469. 
+47 is the number of customers who accepted the personal loan offer and who own a credit card and use online banking services. 
+469 is the number of customers that did not accept the loan offer but own credit card and use online banking services. 
+The probability obtained from these two entries from question B is 9.1%. 
+
+After running Naive Bayes on R, the entries from the output are: 
+Probability of Loan=1 : 0.09166667
+Probability of having a credit card for Loan= 1:  0.280000
+Probability for using online banking services for Loan=1: 0.6036364. 
+The score for Loan=1 is: 0.09166667 x 0.280000 x 0.6036364= 0.01549
+
+The entries for the customers who did not accept the loan are: 
+
+Probability of Loan =0: 0.90833333 
+Probability of having a credit card for Loan=0:  0.293945 
+Probability of using online banking services for Loan=0:  0.5827523 
+
+The score for Loan=0 is: 0.90833333 x  0.293945 x 0.5827523= 0.15559
+
+The final probability is score for Loan=1 / score for Loan=1 + score for Loan=0: 
+0.01549/ (0.01549+ 0.15559)= 0.01549/ 0.17108= 0.0905 
+0.0905 x 100 = 9.05%. 
+So, the probability that the Naive Bayes model estimates that a customer with a credit card and who uses the online banking services will accept a personal loan offer is 9.05%. 
+When comparing it to the probability I obtained in question E 9.04% I observe that both probabilities are quite close with an approximate gap of 0.01 percentage points, which suggests that the estimated probability that a customer who owns a credit card and uses online banking services will accept the personal loan offer is at 9%. 
