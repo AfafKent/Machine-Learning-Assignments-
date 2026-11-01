@@ -1,0 +1,87 @@
+---
+title: "k-Means"
+author: "Afaf MS"
+date: "2026-10-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+Pharmaceuticals <- read.csv("Pharmaceuticals.csv")
+head(Pharmaceuticals)
+names(Pharmaceuticals)
+dim(Pharmaceuticals)
+financial.df <- Pharmaceuticals[, c(
+  "Market_Cap",
+  "Beta",
+  "PE_Ratio",
+  "ROE",
+  "ROA",
+  "Asset_Turnover",
+  "Leverage",
+  "Rev_Growth",
+  "Net_Profit_Margin"
+)]
+dim(financial.df)
+financial.scaled <- scale(financial.df)
+head(financial.scaled)
+apply(financial.scaled, 2, mean)
+apply(financial.scaled, 2, sd)
+set.seed(1)
+wss <- numeric(6)
+for (k in 1:6) {
+  model <- kmeans(financial.scaled, centers = k, nstart = 10)
+  wss[k] <- model$tot.withinss
+}
+plot(1:6, wss, 
+     type = "b",
+     xlab = "Number of Clusters (k)", 
+     ylab = "Total Within-Cluster Variation",
+     main = "Elbow Plot for K-means Clustering")
+set.seed(1)
+three.clusters <- kmeans(financial.scaled, centers = 3, nstart = 10 )
+three.clusters$cluster
+table(three.clusters$cluster)
+aggregate(as.data.frame(financial.scaled),
+          by = list(Cluster = three.clusters$cluster),
+          FUN = mean)
+cluster.details <- data.frame(
+  Cluster = three.clusters$cluster,
+  Median_Recommendation = Pharmaceuticals$Median_Recommendation,
+  Location = Pharmaceuticals$Location,
+  Exchange = Pharmaceuticals$Exchange
+)
+cluster.details
+table(cluster.details$Cluster, cluster.details$Median_Recommendation)
+table(cluster.details$Cluster, cluster.details$Location)
+table(cluster.details$Cluster, cluster.details$Exchange)
+knitr::opts_chunk$set(echo = TRUE)
+```
+Question a: 
+I used k-means clustering to group the 21 pharmaceutical firms based on the nine numerical variables.
+
+After selecting the nine numerical variables, I standardized them using scale(). Some variables, such as Market_Cap, have much larger numerical values than others. Without standardization, clustering could be dominated by variables with larger numerical scales. Standardization lets variables contribute on comparable scales so the clustering reflects their relative patterns rather than being skewed by their large numbers.
+
+I used an elbow plot to help me decide how many clusters (K) to use. The plot shows a sharp drop from one to two clusters and another noticeable drop from two to three clusters. This means that adding a second and then a third cluster reduces the differences among companies within their assigned groups. After three clusters, the line flattens, meaning adding more clusters makes less of a difference. Therefore, I chose K = 3 because it seems to be a reasonable choice for grouping the 21 pharmaceutical companies without creating too many clusters.
+I also used nstart = 10 so R would try 10 different starting arrangements, making the results more reliable because the final clusters are less likely to depend on a single starting arrangement.
+
+Question b: 
+The standardized variables helped me interpret the three clusters. Cluster 1 shows a PE_ratio well above average, while ROE, ROA, and net profit margin are well below average.
+
+Cluster 2 shows above-average values for market capitalization, ROE, ROA, and net profit margin. These values distinguish Cluster 2 from Clusters 1 and 3, where these values are below average. Cluster 3 differs in revenue growth and leverage, which are above average, while they are below average in Clusters 1 and 2. At the same time, Cluster 3 has the lowest average asset turnover of the three clusters.
+Overall, net profit margin, ROA, and PE_Ratio are major distinguishing characteristics of the three clusters. So these three variables help explain the differences between the clusters, but they do not fully describe the financial profiles of the companies, since all nine numerical variables were used to form the clusters.
+
+Question c: 
+Variables 10 to 12 show a pattern, with mixed recommendations within each cluster. Cluster 1 is mixed, with two companies rated Hold. However, it is the only cluster with 1 strong buy recommendation. The cluster is also spread across four countries, and all are listed on the NYSE. Cluster 2 has the most firms rated Hold; most are based in the United States (8 out of 11), and all are listed on the NYSE. Finally, Cluster 3 has the most firms rated Moderate Buy, mostly based in the US (4 out of 6), and it is the only cluster that includes all stock exchanges. 
+
+Question d: 
+While the names of the groups were primarily based on variables 1-9, they also took into account variables 10-12 from question c. 
+
+Cluster 1: Low Profitability, Highest PE_Ratio
+
+Cluster 2: High Profitability, Larger Market Capitalization
+
+Cluster 3: Highest Leverage and Revenue Growth, Lowest Asset Turnover
+
