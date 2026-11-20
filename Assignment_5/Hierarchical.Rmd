@@ -1,0 +1,147 @@
+---
+title: "Hierarchical"
+author: "Afaf MS"
+date: "2026-11-09"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+Cereals <- read.csv("Cereals.csv")
+head(Cereals)
+names(Cereals)
+dim(Cereals)
+colSums(is.na(Cereals))
+Cereals <- na.omit(Cereals)
+dim(Cereals)
+colSums(is.na(Cereals))
+Cereals_numeric <- Cereals[, 4:16]
+Cereals_scaled <- scale(Cereals_numeric)
+round(apply(Cereals_scaled, 2, mean), 2)
+round(apply(Cereals_scaled, 2, sd), 2)
+library(cluster)
+single.clustering <- agnes(Cereals_scaled,
+                       method = "single",
+                       metric = "euclidean")
+summary(single.clustering)
+complete.clustering <- agnes(Cereals_scaled,
+                             method = "complete",
+                             metric = "euclidean")
+summary(complete.clustering)
+average.clustering <- agnes (Cereals_scaled, 
+                             method = "average",
+                             metric = "euclidean")
+summary(average.clustering)
+ward.clustering <- agnes(Cereals_scaled,
+                         method = "ward",
+                         metric = "euclidean")
+summary (ward.clustering)
+plot(as.hclust(ward.clustering),
+     main = "ward Clustering",
+     labels = FALSE)
+ward.hclust <- as.hclust(ward.clustering)
+clusters3 <- cutree(ward.hclust, k = 3)
+clusters4 <- cutree(ward.hclust, k = 4)
+clusters6 <- cutree(ward.hclust, k = 6)
+table(clusters3)
+table(clusters4)
+table(clusters6)
+plot(ward.hclust,
+     labels = FALSE,
+     main = "Ward Clustering: 3 Cluster",
+     xlab = "Cereals",
+     ylab = "Clustering Height")
+rect.hclust(ward.hclust, k = 3, border = 2:4)
+plot(ward.hclust,
+     labels = FALSE,
+     main = "Ward Clustering: 4 Clusters",
+     xlab = "Cereals",
+     ylab = "Clustering Height")
+rect.hclust(ward.hclust, k = 4, border = 2:5)
+plot(ward.hclust,
+     labels = FALSE,
+     main = "Ward Clustering: 6 Clusters",
+     xlab = "Cereals",
+     ylab = "Clustering Height")
+rect.hclust(ward.hclust, k = 6, border = 2:7)
+table(cutree(ward.clustering, k = 4))
+ward.k4.clusters <- cutree(ward.clustering, k = 4)
+aggregate(Cereals_scaled,
+          by = list(Cluster = ward.k4.clusters),
+          FUN = mean)
+set.seed(1)
+partition.A <- sample(1:nrow(Cereals_scaled),
+                      0.6 * nrow(Cereals_scaled))
+partition.A.data <- Cereals_scaled[partition.A,]
+partition.B.data <- Cereals_scaled[-partition.A,]
+dim(partition.A.data)
+dim(partition.B.data)
+ward.partition.A <-agnes(
+  partition.A.data,
+  metric = "euclidean",
+  method = "ward"
+)
+ward.A.k4.clusters <- cutree(ward.partition.A, k = 4)
+table(ward.A.k4.clusters)
+ward.A.centroids <- aggregate(
+  partition.A.data,
+  by = list(Cluster = ward.A.k4.clusters),
+  FUN = mean
+)
+ward.A.centroids
+ward.A.centroids.data <- ward.A.centroids[, -1]
+cereals.distance.B.to.A.centroids <- as.matrix(dist(rbind(ward.A.centroids.data, partition.B.data)))
+B.closest.A.centroid <- apply(cereals.distance.B.to.A.centroids[5:34, 1:4], 1, which.min)
+table(B.closest.A.centroid)
+table(B.closest.A.centroid,
+      ward.k4.clusters[-partition.A])
+aggregate(Cereals_scaled[, c("sugars", "protein", "sodium", "fiber")],
+          by = list(Clusters = ward.k4.clusters),
+          FUN = mean)
+Cereals$name[ward.k4.clusters == 1]
+Cereals[ward.k4.clusters == 1,
+        c("name", "sugars", "protein", "sodium", "fiber")]
+Cereals[ward.k4.clusters == 4,
+        c("name", "sugars", "protein", "sodium", "fiber")]
+```
+
+## R Markdown
+
+Question 1:
+The Ward clustering had the highest agglomerative coefficient of 0.9046, compared to the single clustering at 0.6068, the complete clustering at 0.8354, and the average clustering at 0.7766. Based on these coefficients, I decided to move forward with Ward clustering because it demonstrates the strongest clustering structure, with a coefficient of 0.9046.
+
+Question 2: 
+I then used the Ward clustering dendrogram to visualize the clustering heights and identify the largest vertical gap, which helped me determine where to make the horizontal cut. The cut crossed six separate branches, which indicates that the data could be divided into 6 clusters. However, six clusters should not be the final decision just because the line crosses six branches. That is why I compared 3, 4, and 6 clusters using the Ward dendrogram to verify the most defensible choice. I also used colored rectangles to help me better visualize and distinguish the cluster boundaries, making it easier to compare how the groupings changed across the three solutions.
+
+After R generated the dendrograms, it was a great visual for comparing different cereal-type clusters. Using k=3, k=4, and k=6, I chose four clusters (k=4) because, with k=3, some cereal boxes were grouped into larger groups, which could overlook prominent differences among them. At the same time, k=6 divides the cereal boxes into smaller groups. While k=6 might outline the differences better, it might also create unnecessary extra groups. Therefore, I picked k=4 because it provides a reasonable middle ground, allowing me to identify more differences among the cereal types without creating too many clusters. 
+
+After dividing the original dataset of 74 cereals into Partition A (44 cereals) and Partition B (30 cereals), I applied the Ward clustering method to Partition A and calculated the centroids of its four clusters, named in my code as (ward.A.centroids). Then, I calculated the distance between the cereals in Partition B and the centroids from Partition A, which I stored in my code as (cereals.distance.B.to.A.centroids). Using B.closest.A.centroid, I assigned each cereal in Partition B to its closest centroid from Partition A. I then compared these assignments with the original clustering results (ward.k4.clusters) to verify cluster stability.
+
+I noticed that the majority of cereals in Partition B cluster 1, which are 11 out of 18, came from the original cluster 4. In Partition B cluster 2, 7 out of 9 cereals came from the original cluster 2, suggesting a very strong consistency. Partition B cluster 3 was equally divided, with 1 cereal from original cluster 2 and 1 from original cluster 4. Lastly, Partition B cluster 4 had only 1 cereal that came from original cluster 1. 
+The results in the tables show that some clusters remained relatively consistent, especially Partition B cluster 2, which shared 7 of its cereals from the original cluster 2. Other clusters showed more differences. Thus, the four clusters show some but not complete stability. 
+
+Which is the healthiest option?
+Since the assignment did not specify the criteria for identifying healthy cereals, I established four nutritional criteria to guide my analysis and recommendation for the elementary school cafeteria. The criteria are: low sugar, low sodium, an appropriate, child-friendly amount of protein, and high or average fiber content. I will use these four criteria to compare the four clusters and identify which one would be the most suitable for supporting a healthy diet. 
+After comparing the sugar, protein, sodium, and fiber averages in the four clusters, I selected Clusters 1 and 4 and examined their individual cereals and their nutritional values to make a better-informed decision. Based on the findings, I would recommend Cluster 4 because it has the lowest average sugar level and slightly below-average sodium. Although its average fiber content is slightly below the overall average, examining the nutritional values of individual cereals within cluster 4 shows that there are options that provide a good amount of fiber and protein. When I examined the individual cereals in Cluster 1, I noticed that while the cluster has a slightly above-average sodium level and offers higher fiber content, its individual cereals contain considerably more sodium than some of the healthier options I identified in Cluster 4. For instance, Shredded Wheat, Shredded Wheat 'n' Bran, and Shredded Wheat Spoon Size in Cluster 4 contain no sugar or sodium and still provide protein and fiber. 
+That is why I believe that Cluster 4 offers the best selection of cereals for the school cafeteria to select from. However, I must note that this does not mean that every cereal in Cluster 4 is equally healthy. The cafeteria should meticulously choose individual cereal brands from within Cluster 4 that best meet their nutritional criteria similar to what I established, to support a healthy, balanced diet. 
+
+The data should be normalized because the nutritional variables are measured using different units and scales. For example, sugar, protein, and fiber are measured in grams, while sodium is measured in milligrams. If we do not normalize the variables, sodium content could have a greater influence on the clustering results, simply because its numerical values are much larger than those of the other variables. 
+By normalizing the data, we can ensure that the variables are compared on a similar scale and that no single variable has a greater influence due to its units of measurement. 
+
+However, this does not mean that we cannot use the original nutritional values in grams and milligrams when evaluating which clusters offer healthier options. In fact, I think we should use them to make a more informed comparison, especially since we can compare the actual nutritional values against established dietary recommendations for children by the Centers for Disease Control and Prevention (CDC), for instance. The CDC recommends that children aged 4-8 should consume less than 1,500 mg of sodium per day, while older kids 9-13 should consume less than 1,800 mg per day. The CDC also recommends no added sugar for children below 11. Additionally, since the dataset provides total sugar rather than added sugar, the school cafeteria should review the nutritional labels of individual cereals to verify their added sugar content before making its final selection. 
+
+The cafeteria should take these recommended daily limits into account when evaluating cereal options, particularly their sodium and sugar content, especially since children consume other foods throughout the day that also contribute to their total sodium and sugar intake. 
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
